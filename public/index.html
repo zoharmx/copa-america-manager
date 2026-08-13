@@ -91,6 +91,10 @@
             </h1>
             <p class="text-slate-400">Gestión Total del Torneo</p>
             
+            <button id="btn-new-tournament" class="absolute top-0 right-0 px-3 py-1.5 rounded-lg bg-slate-800/60 border border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white text-xs font-medium transition-colors" title="Empezar un torneo nuevo (borra los resultados actuales)">
+                🔄 Nuevo Torneo
+            </button>
+            
             <div id="init-section" class="mt-6">
                 <button id="btn-draw" class="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-xl shadow-lg transition-all transform hover:scale-105">
                     Realizar Sorteo Oficial
@@ -289,6 +293,7 @@
         // DOM Elements
         const DOM = {
             btnDraw: document.getElementById('btn-draw'),
+            btnNewTournament: document.getElementById('btn-new-tournament'),
             initSection: document.getElementById('init-section'),
             dashboard: document.getElementById('main-dashboard'),
             tabs: document.querySelectorAll('.tab-btn'),
@@ -891,6 +896,27 @@
         }
 
         DOM.btnDraw.addEventListener('click', initTournament);
+
+        // Nuevo torneo: borra los datos actuales y empieza de cero
+        DOM.btnNewTournament.addEventListener('click', () => {
+            if (!confirm('¿Empezar un nuevo torneo?\n\nSe borrarán los resultados actuales y se realizará un sorteo nuevo.')) return;
+            const oldId = localStorage.getItem('tournament_id');
+            localStorage.setItem('tournament_id', 'torneo_' + Date.now());
+            DOM.btnNewTournament.disabled = true;
+            DOM.btnNewTournament.textContent = '🔄 Creando…';
+            const finish = () => location.reload();
+            if (window.FirebaseAPI && oldId) {
+                // Borra el torneo anterior (mejor esfuerzo) y recarga para empezar de cero
+                Promise.race([
+                    window.FirebaseAPI.deleteTournament(oldId).catch((e) =>
+                        console.warn('[Firebase] error al borrar torneo', e)
+                    ),
+                    new Promise((r) => setTimeout(r, 5000))
+                ]).then(finish);
+            } else {
+                finish();
+            }
+        });
         DOM.btnClose.addEventListener('click', closeModal);
         DOM.btnCancel.addEventListener('click', closeModal);
 

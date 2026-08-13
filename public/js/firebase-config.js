@@ -42,6 +42,7 @@
       setDoc,
       deleteDoc,
       collection,
+      getDocs,
       onSnapshot,
       serverTimestamp
     } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
@@ -64,6 +65,13 @@
       async deleteMatch(tournamentId, matchId) {
         const ref = doc(db, 'tournaments', tournamentId, 'matches', matchId);
         await deleteDoc(ref);
+      },
+      // Borra un torneo completo (partidos + documento) para empezar de cero
+      async deleteTournament(tournamentId) {
+        const colRef = collection(db, 'tournaments', tournamentId, 'matches');
+        const snap = await getDocs(colRef);
+        await Promise.all(snap.docs.map((d) => deleteDoc(d.ref)));
+        await deleteDoc(doc(db, 'tournaments', tournamentId));
       },
       // Suscripción en tiempo real a todos los partidos del torneo
       subscribeMatches(tournamentId, onChange, onError) {

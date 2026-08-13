@@ -76,7 +76,7 @@ git push -u origin main
 - Cada vez que guardas un resultado, se persiste en Firestore (`tournaments/{id}/matches/{matchId}`)
 - Un `onSnapshot` escucha cambios y actualiza la UI en vivo
 - El `tournament_id` se guarda en `localStorage`, así que un mismo navegador siempre edita el mismo torneo
-- Para empezar un torneo nuevo, abre la consola y ejecuta:
+- Para empezar un torneo nuevo usa el botón **🔄 Nuevo Torneo** (arriba a la derecha): borra los datos actuales de Firestore y arranca un sorteo nuevo. Alternativa por consola:
   ```js
   localStorage.removeItem('tournament_id'); location.reload();
   ```
