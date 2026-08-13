@@ -1,0 +1,13 @@
+{
+  "name": "copa-america-manager",
+  "version": "1.0.0",
+  "description": "Simulador de Copa América con persistencia en tiempo real (Firebase Firestore)",
+  "private": true,
+  "scripts": {
+    "dev": "npm run build:config && npx serve public -l 3000",
+    "build:config": "node scripts/build-firebase-config.js",
+    "deploy:rules": "firebase deploy --only firestore:rules"
+  },
+  "keywords": ["copa-america", "simulador", "firebase", "vercel"],
+  "license": "MIT"
+}

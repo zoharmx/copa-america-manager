@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestor Copa América Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1e293b; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #475569; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #64748b; 
+        }
+
+        .flag-icon {
+            width: 28px;
+            height: 20px;
+            object-fit: cover;
+            border-radius: 3px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+
+        .flag-lg {
+            width: 48px;
+            height: 36px;
+        }
+
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+        }
+
+        .tab-btn.active {
+            border-bottom: 2px solid #3b82f6;
+            color: #60a5fa;
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .match-card {
+            transition: all 0.2s;
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+        
+        .match-card:hover {
+            transform: translateY(-2px);
+            background: rgba(51, 65, 85, 0.9);
+            border-color: rgba(96, 165, 250, 0.3);
+        }
+
+        .match-played {
+            border-left: 4px solid #10b981; /* Emerald border for played */
+        }
+        
+        .match-pending {
+            border-left: 4px solid #f59e0b; /* Amber border for pending */
+        }
+
+        /* Modal Overlay */
+        #modal-overlay {
+            backdrop-filter: blur(5px);
+        }
+    </style>
+</head>
+<body class="min-h-screen text-sm md:text-base">
+
+    <div class="max-w-7xl mx-auto p-4 md:p-6">
+        <header class="text-center mb-8 relative">
+            <h1 class="text-3xl md:text-5xl font-extrabold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-400 to-emerald-400">
+                Copa América Manager
+            </h1>
+            <p class="text-slate-400">Gestión Total del Torneo</p>
+            
+            <div id="init-section" class="mt-6">
+                <button id="btn-draw" class="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-xl shadow-lg transition-all transform hover:scale-105">
+                    Realizar Sorteo Oficial
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Dashboard (Hidden initially) -->
+        <main id="main-dashboard" class="hidden">
+            
+            <!-- Navigation Tabs -->
+            <nav class="flex justify-center mb-6 border-b border-slate-700">
+                <button class="tab-btn active px-6 py-3 font-semibold text-slate-300 hover:text-white transition-colors rounded-t-lg" data-tab="grupos">
+                    Fase de Grupos
+                </button>
+                <button class="tab-btn px-6 py-3 font-semibold text-slate-300 hover:text-white transition-colors rounded-t-lg" data-tab="eliminatorias">
+                    Eliminatorias
+                </button>
+                <button class="tab-btn px-6 py-3 font-semibold text-slate-300 hover:text-white transition-colors rounded-t-lg" data-tab="estadisticas">
+                    Estadísticas
+                </button>
+            </nav>
+
+            <!-- Tab: Grupos -->
+            <section id="tab-grupos" class="tab-content block">
+                <div id="groups-grid" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Groups injected here -->
+                </div>
+            </section>
+
+            <!-- Tab: Eliminatorias -->
+            <section id="tab-eliminatorias" class="tab-content hidden">
+                <div id="knockout-warning" class="text-center p-8 glass-panel text-amber-400 mb-6">
+                    ⚠️ Completa todos los partidos de la Fase de Grupos para desbloquear las eliminatorias.
+                </div>
+                <div id="knockout-bracket" class="hidden flex flex-col md:flex-row justify-between gap-6 overflow-x-auto pb-8">
+                    <!-- QF -->
+                    <div class="flex-1 min-w-[250px] flex flex-col justify-center gap-4" id="bracket-qf">
+                        <h3 class="text-center font-bold text-slate-400 mb-2">Cuartos de Final</h3>
+                    </div>
+                    <!-- SF -->
+                    <div class="flex-1 min-w-[250px] flex flex-col justify-center gap-12" id="bracket-sf">
+                        <h3 class="text-center font-bold text-slate-400 mb-2">Semifinales</h3>
+                    </div>
+                    <!-- Final -->
+                    <div class="flex-1 min-w-[250px] flex flex-col justify-center gap-4" id="bracket-f">
+                        <h3 class="text-center font-bold text-yellow-400 mb-2">La Gran Final</h3>
+                    </div>
+                </div>
+                
+                <!-- Champion Banner -->
+                <div id="champion-banner" class="hidden mt-8 text-center animate-pulse">
+                     <h2 class="text-3xl font-bold text-yellow-400 mb-4">¡CAMPEÓN DE AMÉRICA!</h2>
+                     <div class="inline-block glass-panel p-6 border-2 border-yellow-500 rounded-2xl shadow-[0_0_30px_rgba(234,179,8,0.3)]">
+                         <img id="champion-flag-img" src="" class="w-32 h-24 object-cover mx-auto rounded shadow-lg mb-4">
+                         <h1 id="champion-name-txt" class="text-4xl font-extrabold text-white"></h1>
+                     </div>
+                </div>
+            </section>
+
+            <!-- Tab: Estadisticas -->
+            <section id="tab-estadisticas" class="tab-content hidden">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Goleadores -->
+                    <div class="glass-panel p-4">
+                        <h3 class="text-lg font-bold text-emerald-400 mb-4 border-b border-slate-700 pb-2">⚽ Máximos Goleadores</h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left">
+                                <thead><tr class="text-slate-400 text-xs uppercase"><th class="pb-2">Jugador</th><th class="pb-2">Equipo</th><th class="pb-2 text-center">Goles</th></tr></thead>
+                                <tbody id="stats-scorers"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <!-- Asistidores -->
+                    <div class="glass-panel p-4">
+                        <h3 class="text-lg font-bold text-blue-400 mb-4 border-b border-slate-700 pb-2">👟 Máximos Asistidores</h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left">
+                                <thead><tr class="text-slate-400 text-xs uppercase"><th class="pb-2">Jugador</th><th class="pb-2">Equipo</th><th class="pb-2 text-center">Asist.</th></tr></thead>
+                                <tbody id="stats-assists"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <!-- Menos Goleado -->
+                    <div class="glass-panel p-4">
+                        <h3 class="text-lg font-bold text-purple-400 mb-4 border-b border-slate-700 pb-2">🛡️ Valla Menos Vencida</h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left">
+                                <thead><tr class="text-slate-400 text-xs uppercase"><th class="pb-2">Equipo</th><th class="pb-2 text-center">PJ</th><th class="pb-2 text-center">GC</th><th class="pb-2 text-center">Prom</th></tr></thead>
+                                <tbody id="stats-defense"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div id="modal-overlay" class="fixed inset-0 bg-slate-900/80 z-50 hidden flex items-center justify-center p-4">
+        <div class="glass-panel w-full max-w-2xl bg-slate-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <!-- Modal Header -->
+            <div class="p-4 border-b border-slate-700 flex justify-between items-center bg-slate-800/80">
+                <h2 class="text-xl font-bold text-white">Editar Partido</h2>
+                <button id="close-modal" class="text-slate-400 hover:text-white text-2xl leading-none">&times;</button>
+            </div>
+            
+            <!-- Modal Body (Scrollable) -->
+            <div class="p-6 overflow-y-auto flex-1">
+                <!-- Match Score Section -->
+                <div class="flex items-center justify-between gap-4 mb-8 bg-slate-900/50 p-6 rounded-xl">
+                    <div class="flex flex-col items-center gap-2 w-1/3">
+                        <img id="modal-t1-flag" src="" class="flag-lg rounded shadow">
+                        <span id="modal-t1-name" class="font-bold text-center"></span>
+                    </div>
+                    <div class="flex items-center gap-4 w-1/3 justify-center">
+                        <input type="number" id="modal-s1" min="0" value="0" class="w-16 h-12 text-2xl text-center bg-slate-700 border border-slate-600 rounded text-white focus:outline-none focus:border-blue-500">
+                        <span class="text-xl font-bold text-slate-500">-</span>
+                        <input type="number" id="modal-s2" min="0" value="0" class="w-16 h-12 text-2xl text-center bg-slate-700 border border-slate-600 rounded text-white focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div class="flex flex-col items-center gap-2 w-1/3">
+                        <img id="modal-t2-flag" src="" class="flag-lg rounded shadow">
+                        <span id="modal-t2-name" class="font-bold text-center"></span>
+                    </div>
+                </div>
+
+                <!-- Penalty Section (Hidden by default, shown for knockouts if tie) -->
+                <div id="modal-penalties" class="hidden mb-8 bg-indigo-900/30 p-4 rounded-xl border border-indigo-500/30">
+                    <h4 class="text-center text-indigo-300 font-semibold mb-3">Definición por Penales</h4>
+                    <div class="flex justify-center gap-8 items-center">
+                        <input type="number" id="modal-p1" min="0" value="0" class="w-12 h-10 text-lg text-center bg-slate-700 border border-slate-600 rounded text-white focus:outline-none focus:border-indigo-500">
+                        <span class="text-sm text-slate-400">Penales</span>
+                        <input type="number" id="modal-p2" min="0" value="0" class="w-12 h-10 text-lg text-center bg-slate-700 border border-slate-600 rounded text-white focus:outline-none focus:border-indigo-500">
+                    </div>
+                </div>
+
+                <!-- Goals Details Section -->
+                <div>
+                    <div class="flex justify-between items-center mb-4 border-b border-slate-700 pb-2">
+                        <h3 class="text-lg font-semibold text-blue-300">Detalles de Goles (Opcional)</h3>
+                        <button id="btn-add-goal" class="px-3 py-1 bg-slate-700 hover:bg-slate-600 text-sm rounded transition-colors">+ Añadir Gol</button>
+                    </div>
+                    
+                    <div id="goals-list" class="space-y-3 mb-6">
+                        <!-- Goal entry rows injected here -->
+                    </div>
+                    <p class="text-xs text-slate-500 italic mb-4">* Registra aquí los autores de los goles para las estadísticas. El marcador se actualizará basado en los goles ingresados.</p>
+                </div>
+
+                <!-- Match Status -->
+                <div class="mt-4 p-4 bg-slate-900/50 rounded-xl border border-slate-700">
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox" id="modal-played" class="w-5 h-5 rounded border-slate-600 text-blue-600 focus:ring-blue-500 focus:ring-offset-slate-900 bg-slate-700">
+                        <span class="text-slate-300 font-medium text-base">Marcar partido como Finalizado</span>
+                    </label>
+                    <p class="text-xs text-slate-500 mt-1 ml-8">Solo los partidos finalizados sumarán puntos y estadísticas.</p>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="p-4 border-t border-slate-700 bg-slate-800/90 flex justify-end gap-3">
+                <button id="cancel-modal" class="px-5 py-2 rounded font-medium text-slate-300 hover:bg-slate-700 transition-colors">Cancelar</button>
+                <button id="save-modal" class="px-5 py-2 rounded font-medium bg-blue-600 hover:bg-blue-500 text-white shadow transition-colors">Guardar Resultado</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Core Data
+        const teamsData = [
+            { id: 'ARG', name: "Argentina", flag: "https://flagcdn.com/w40/ar.png", pot: 1 },
+            { id: 'BRA', name: "Brasil", flag: "https://flagcdn.com/w40/br.png", pot: 1 },
+            { id: 'COL', name: "Colombia", flag: "https://flagcdn.com/w40/co.png", pot: 1 },
+            { id: 'USA', name: "Estados Unidos", flag: "https://flagcdn.com/w40/us.png", pot: 1 },
+            { id: 'MEX', name: "Mexico", flag: "https://flagcdn.com/w40/mx.png", pot: 2 },
+            { id: 'URU', name: "Uruguay", flag: "https://flagcdn.com/w40/uy.png", pot: 2 },
+            { id: 'ECU', name: "Ecuador", flag: "https://flagcdn.com/w40/ec.png", pot: 2 },
+            { id: 'CAN', name: "Canada", flag: "https://flagcdn.com/w40/ca.png", pot: 2 },
+            { id: 'PAR', name: "Paraguay", flag: "https://flagcdn.com/w40/py.png", pot: 3 },
+            { id: 'CHI', name: "Chile", flag: "https://flagcdn.com/w40/cl.png", pot: 3 },
+            { id: 'PER', name: "Peru", flag: "https://flagcdn.com/w40/pe.png", pot: 3 },
+            { id: 'JAM', name: "Jamaica", flag: "https://flagcdn.com/w40/jm.png", pot: 3 },
+            { id: 'CUW', name: "Curazao", flag: "https://flagcdn.com/w40/cw.png", pot: 4 },
+            { id: 'VEN', name: "Venezuela", flag: "https://flagcdn.com/w40/ve.png", pot: 4 },
+            { id: 'HAI', name: "Haiti", flag: "https://flagcdn.com/w40/ht.png", pot: 4 },
+            { id: 'BOL', name: "Bolivia", flag: "https://flagcdn.com/w40/bo.png", pot: 4 }
+        ];
+
+        // Application State
+        const state = {
+            groups: { A: [], B: [], C: [], D: [] }, // Group Standings (teams)
+            matches: [], // All matches (Group + Knockout)
+            activeMatchId: null, // For modal
+            knockoutsGenerated: false
+        };
+
+        // DOM Elements
+        const DOM = {
+            btnDraw: document.getElementById('btn-draw'),
+            initSection: document.getElementById('init-section'),
+            dashboard: document.getElementById('main-dashboard'),
+            tabs: document.querySelectorAll('.tab-btn'),
+            tabContents: document.querySelectorAll('.tab-content'),
+            groupsGrid: document.getElementById('groups-grid'),
+            
+            // Modal
+            modal: document.getElementById('modal-overlay'),
+            btnClose: document.getElementById('close-modal'),
+            btnCancel: document.getElementById('cancel-modal'),
+            btnSave: document.getElementById('save-modal'),
+            btnAddGoal: document.getElementById('btn-add-goal'),
+            goalsList: document.getElementById('goals-list'),
+            mFlag1: document.getElementById('modal-t1-flag'),
+            mFlag2: document.getElementById('modal-t2-flag'),
+            mName1: document.getElementById('modal-t1-name'),
+            mName2: document.getElementById('modal-t2-name'),
+            mScore1: document.getElementById('modal-s1'),
+            mScore2: document.getElementById('modal-s2'),
+            mPlayed: document.getElementById('modal-played'),
+            mPenalties: document.getElementById('modal-penalties'),
+            mPen1: document.getElementById('modal-p1'),
+            mPen2: document.getElementById('modal-p2'),
+            
+            // Knockouts
+            kWarning: document.getElementById('knockout-warning'),
+            kBracket: document.getElementById('knockout-bracket'),
+            bQf: document.getElementById('bracket-qf'),
+            bSf: document.getElementById('bracket-sf'),
+            bF: document.getElementById('bracket-f'),
+            champBanner: document.getElementById('champion-banner'),
+            champFlag: document.getElementById('champion-flag-img'),
+            champName: document.getElementById('champion-name-txt'),
+            
+            // Stats
+            sScorers: document.getElementById('stats-scorers'),
+            sAssists: document.getElementById('stats-assists'),
+            sDefense: document.getElementById('stats-defense')
+        };
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function initTournament() {
+            // Draw Groups
+            const pots = { 1: [], 2: [], 3: [], 4: [] };
+            teamsData.forEach(t => pots[t.pot].push({ ...t }));
+            for (let p in pots) pots[p] = shuffleArray(pots[p]);
+
+            const groupNames = ['A', 'B', 'C', 'D'];
+            groupNames.forEach(g => state.groups[g] = []);
+
+            for (let potNum = 1; potNum <= 4; potNum++) {
+                groupNames.forEach(g => {
+                    const team = pots[potNum].pop();
+                    if (team) {
+                        state.groups[g].push({
+                            ...team, 
+                            pts: 0, pj: 0, pg: 0, pe: 0, pp: 0, gf: 0, gc: 0, gd: 0
+                        });
+                    }
+                });
+            }
+
+            // Generate Group Matches
+            state.matches = [];
+            groupNames.forEach(g => {
+                const teams = state.groups[g];
+                // Round Robin format
+                const matchups = [
+                    [0, 1], [2, 3], // J1
+                    [0, 2], [1, 3], // J2
+                    [0, 3], [1, 2]  // J3
+                ];
+                
+                matchups.forEach((m, idx) => {
+                    state.matches.push({
+                        id: `G-${g}-${idx+1}`,
+                        type: 'group',
+                        group: g,
+                        round: Math.floor(idx/2) + 1,
+                        t1: teams[m[0]],
+                        t2: teams[m[1]],
+                        s1: 0,
+                        s2: 0,
+                        played: false,
+                        events: [] // {teamId, scorer, assist}
+                    });
+                });
+            });
+
+            // UI Updates
+            DOM.initSection.classList.add('hidden');
+            DOM.dashboard.classList.remove('hidden');
+            renderGroups();
+            updateStats();
+        }
+
+        function renderGroups() {
+            DOM.groupsGrid.innerHTML = '';
+            
+            ['A', 'B', 'C', 'D'].forEach(g => {
+                const teams = state.groups[g];
+                
+                // Sort Standings
+                teams.sort((a, b) => {
+                    if (b.pts !== a.pts) return b.pts - a.pts;
+                    if (b.gd !== a.gd) return b.gd - a.gd;
+                    if (b.gf !== a.gf) return b.gf - a.gf;
+                    return a.name.localeCompare(b.name);
+                });
+
+                // Generate Table Rows
+                const tableRows = teams.map((t, idx) => `
+                    <tr class="border-b border-slate-700/50 ${idx < 2 ? 'bg-emerald-900/10' : ''}">
+                        <td class="py-2 text-center text-slate-400 text-xs">${idx + 1}</td>
+                        <td class="py-2 flex items-center gap-2">
+                            <img src="${t.flag}" class="flag-icon" alt="${t.name}">
+                            <span class="font-medium text-sm truncate w-24">${t.name}</span>
+                        </td>
+                        <td class="py-2 text-center text-sm font-bold text-blue-400">${t.pts}</td>
+                        <td class="py-2 text-center text-xs text-slate-400">${t.pj}</td>
+                        <td class="py-2 text-center text-xs">${t.pg}-${t.pe}-${t.pp}</td>
+                        <td class="py-2 text-center text-xs text-slate-400">${t.gf}:${t.gc}</td>
+                        <td class="py-2 text-center text-xs font-semibold ${t.gd > 0 ? 'text-green-400' : (t.gd < 0 ? 'text-red-400' : 'text-slate-400')}">${t.gd > 0 ? '+'+t.gd : t.gd}</td>
+                    </tr>
+                `).join('');
+
+                // Get Group Matches
+                const gMatches = state.matches.filter(m => m.type === 'group' && m.group === g);
+                const matchesHtml = gMatches.map(m => {
+                    const statusClass = m.played ? 'match-played bg-slate-800' : 'match-pending bg-slate-800/40';
+                    const scoreText = m.played ? `<span class="font-bold text-base text-white">${m.s1} - ${m.s2}</span>` : `<span class="text-xs text-slate-400">vs</span>`;
+                    
+                    return `
+                        <div class="glass-panel p-2 mb-2 match-card flex justify-between items-center ${statusClass}" onclick="openMatchEditor('${m.id}')">
+                            <div class="flex items-center gap-2 w-2/5">
+                                <img src="${m.t1.flag}" class="flag-icon w-5 h-3" alt="${m.t1.name}">
+                                <span class="text-xs truncate ${m.played && m.s1 > m.s2 ? 'font-bold text-white' : 'text-slate-300'}">${m.t1.name}</span>
+                            </div>
+                            <div class="w-1/5 text-center bg-slate-900/50 rounded py-1">
+                                ${scoreText}
+                            </div>
+                            <div class="flex items-center justify-end gap-2 w-2/5">
+                                <span class="text-xs truncate text-right ${m.played && m.s2 > m.s1 ? 'font-bold text-white' : 'text-slate-300'}">${m.t2.name}</span>
+                                <img src="${m.t2.flag}" class="flag-icon w-5 h-3" alt="${m.t2.name}">
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                const groupHTML = `
+                    <div class="glass-panel p-4 flex flex-col h-full bg-slate-800/30">
+                        <h2 class="text-xl font-bold text-center mb-3 text-emerald-400 border-b border-slate-600 pb-2">Grupo ${g}</h2>
+                        
+                        <div class="overflow-x-auto mb-4">
+                            <table class="w-full text-left border-collapse whitespace-nowrap">
+                                <thead>
+                                    <tr class="text-[10px] text-slate-400 uppercase bg-slate-800/50">
+                                        <th class="py-2 font-normal text-center w-6">#</th>
+                                        <th class="py-2 font-normal">Equipo</th>
+                                        <th class="py-2 font-normal text-center w-8">Pts</th>
+                                        <th class="py-2 font-normal text-center w-6">PJ</th>
+                                        <th class="py-2 font-normal text-center w-12" title="Ganados-Empatados-Perdidos">G-E-P</th>
+                                        <th class="py-2 font-normal text-center w-10">GF:GC</th>
+                                        <th class="py-2 font-normal text-center w-8">DIF</th>
+                                    </tr>
+                                </thead>
+                                <tbody>${tableRows}</tbody>
+                            </table>
+                        </div>
+
+                        <div class="mt-auto">
+                            <h4 class="text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wider">Partidos</h4>
+                            ${matchesHtml}
+                        </div>
+                    </div>
+                `;
+                DOM.groupsGrid.innerHTML += groupHTML;
+            });
+        }
+
+        function openMatchEditor(matchId) {
+            const match = state.matches.find(m => m.id === matchId);
+            if(!match) return;
+            state.activeMatchId = matchId;
+
+            // Populate Headers
+            DOM.mFlag1.src = match.t1.flag;
+            DOM.mName1.textContent = match.t1.name;
+            DOM.mFlag2.src = match.t2.flag;
+            DOM.mName2.textContent = match.t2.name;
+
+            // Populate Scores
+            DOM.mScore1.value = match.s1;
+            DOM.mScore2.value = match.s2;
+            DOM.mPlayed.checked = match.played;
+
+            // Penalty Logic for Knockouts
+            if (match.type !== 'group') {
+                DOM.mPenalties.classList.remove('hidden');
+                DOM.mPen1.value = match.pen1 || 0;
+                DOM.mPen2.value = match.pen2 || 0;
+                // Auto show/hide based on scores
+                togglePenaltiesVis();
+            } else {
+                DOM.mPenalties.classList.add('hidden');
+            }
+
+            // Populate Goals List
+            DOM.goalsList.innerHTML = '';
+            if(match.events && match.events.length > 0) {
+                match.events.forEach(ev => addGoalRow(ev.teamId, ev.scorer, ev.assist));
+            }
+
+            DOM.modal.classList.remove('hidden');
+        }
+
+        function closeModal() {
+            DOM.modal.classList.add('hidden');
+            state.activeMatchId = null;
+        }
+
+        function togglePenaltiesVis() {
+            const match = state.matches.find(m => m.id === state.activeMatchId);
+            if (match && match.type !== 'group') {
+                if (parseInt(DOM.mScore1.value) === parseInt(DOM.mScore2.value) && DOM.mPlayed.checked) {
+                    DOM.mPenalties.classList.remove('hidden');
+                } else {
+                    DOM.mPenalties.classList.add('hidden');
+                }
+            }
+        }
+
+        DOM.mScore1.addEventListener('input', togglePenaltiesVis);
+        DOM.mScore2.addEventListener('input', togglePenaltiesVis);
+        DOM.mPlayed.addEventListener('change', togglePenaltiesVis);
+
+        function addGoalRow(teamId = null, scorer = '', assist = '') {
+            const match = state.matches.find(m => m.id === state.activeMatchId);
+            const row = document.createElement('div');
+            row.className = 'goal-entry flex gap-2 items-center bg-slate-900/40 p-2 rounded';
+            
+            const selT1 = teamId === match.t1.id ? 'selected' : '';
+            const selT2 = teamId === match.t2.id ? 'selected' : '';
+
+            row.innerHTML = `
+                <select class="goal-team p-1 bg-slate-700 rounded text-sm text-white border border-slate-600 focus:outline-none focus:border-blue-500 w-1/3">
+                    <option value="${match.t1.id}" ${selT1}>${match.t1.name}</option>
+                    <option value="${match.t2.id}" ${selT2}>${match.t2.name}</option>
+                </select>
+                <input type="text" placeholder="Autor del Gol" value="${scorer}" class="goal-scorer p-1 bg-slate-700 rounded text-sm text-white border border-slate-600 focus:outline-none focus:border-blue-500 w-1/3">
+                <input type="text" placeholder="Asistencia (Opcional)" value="${assist}" class="goal-assist p-1 bg-slate-700 rounded text-sm text-white border border-slate-600 focus:outline-none focus:border-blue-500 w-1/3">
+                <button type="button" class="text-red-400 hover:text-red-300 px-2" onclick="this.parentElement.remove()">✕</button>
+            `;
+            DOM.goalsList.appendChild(row);
+        }
+
+        DOM.btnAddGoal.addEventListener('click', () => addGoalRow());
+
+        DOM.btnSave.addEventListener('click', () => {
+            const match = state.matches.find(m => m.id === state.activeMatchId);
+            if(!match) return;
+
+            // Collect Data
+            match.s1 = parseInt(DOM.mScore1.value) || 0;
+            match.s2 = parseInt(DOM.mScore2.value) || 0;
+            match.played = DOM.mPlayed.checked;
+
+            if (match.type !== 'group' && match.s1 === match.s2 && match.played) {
+                match.pen1 = parseInt(DOM.mPen1.value) || 0;
+                match.pen2 = parseInt(DOM.mPen2.value) || 0;
+            }
+
+            // Collect Events
+            const goalRows = DOM.goalsList.querySelectorAll('.goal-entry');
+            match.events = Array.from(goalRows).map(row => {
+                return {
+                    teamId: row.querySelector('.goal-team').value,
+                    scorer: row.querySelector('.goal-scorer').value.trim(),
+                    assist: row.querySelector('.goal-assist').value.trim()
+                };
+            }).filter(ev => ev.scorer !== ''); // Only keep if there's a scorer
+
+            // If match is group stage, recalculate all standings
+            if (match.type === 'group') {
+                recalculateGroupStandings();
+                renderGroups();
+                checkGroupStageCompletion();
+            } else {
+                // Update Knockout Tree
+                renderKnockouts();
+                checkKnockoutProgress();
+            }
+
+            updateStats();
+            closeModal();
+        });
+
+        function recalculateGroupStandings() {
+            // Reset all teams stats
+            Object.values(state.groups).flat().forEach(t => {
+                t.pts = 0; t.pj = 0; t.pg = 0; t.pe = 0; t.pp = 0; t.gf = 0; t.gc = 0; t.gd = 0;
+            });
+
+            // Iterate over all played group matches
+            const playedGroups = state.matches.filter(m => m.type === 'group' && m.played);
+            
+            playedGroups.forEach(m => {
+                // Find references in groups array
+                const t1 = state.groups[m.group].find(t => t.id === m.t1.id);
+                const t2 = state.groups[m.group].find(t => t.id === m.t2.id);
+
+                t1.pj++; t2.pj++;
+                t1.gf += m.s1; t1.gc += m.s2;
+                t2.gf += m.s2; t2.gc += m.s1;
+
+                if (m.s1 > m.s2) {
+                    t1.pg++; t1.pts += 3; t2.pp++;
+                } else if (m.s2 > m.s1) {
+                    t2.pg++; t2.pts += 3; t1.pp++;
+                } else {
+                    t1.pe++; t2.pe++; t1.pts += 1; t2.pts += 1;
+                }
+
+                t1.gd = t1.gf - t1.gc;
+                t2.gd = t2.gf - t2.gc;
+            });
+        }
+
+        function checkGroupStageCompletion() {
+            const groupMatches = state.matches.filter(m => m.type === 'group');
+            const allPlayed = groupMatches.every(m => m.played);
+
+            if (allPlayed && !state.knockoutsGenerated) {
+                generateKnockouts();
+            }
+        }
+
+        function generateKnockouts() {
+            state.knockoutsGenerated = true;
+            DOM.kWarning.classList.add('hidden');
+            DOM.kBracket.classList.remove('hidden');
+
+            // QF Format: 
+            // 1A vs 2B (Q1), 1C vs 2D (Q3)
+            // 1B vs 2A (Q2), 1D vs 2C (Q4)
+            
+            // Standings are already sorted in renderGroups, but we sort again to be safe
+            ['A','B','C','D'].forEach(g => {
+                 state.groups[g].sort((a, b) => {
+                    if (b.pts !== a.pts) return b.pts - a.pts;
+                    if (b.gd !== a.gd) return b.gd - a.gd;
+                    if (b.gf !== a.gf) return b.gf - a.gf;
+                    return 0; 
+                });
+            });
+
+            const qfMatches = [
+                { id: 'QF-1', type: 'qf', t1: state.groups['A'][0], t2: state.groups['B'][1], s1:0, s2:0, played:false, events:[] },
+                { id: 'QF-2', type: 'qf', t1: state.groups['B'][0], t2: state.groups['A'][1], s1:0, s2:0, played:false, events:[] },
+                { id: 'QF-3', type: 'qf', t1: state.groups['C'][0], t2: state.groups['D'][1], s1:0, s2:0, played:false, events:[] },
+                { id: 'QF-4', type: 'qf', t1: state.groups['D'][0], t2: state.groups['C'][1], s1:0, s2:0, played:false, events:[] }
+            ];
+
+            // Append to main match list
+            state.matches = state.matches.concat(qfMatches);
+            renderKnockouts();
+        }
+
+        function getWinner(match) {
+            if (!match || !match.played) return null;
+            if (match.s1 > match.s2) return match.t1;
+            if (match.s2 > match.s1) return match.t2;
+            if (match.pen1 > match.pen2) return match.t1;
+            if (match.pen2 > match.pen1) return match.t2;
+            return null; // Should not happen in completed knockout match
+        }
+
+        function checkKnockoutProgress() {
+            // Check QF -> SF
+            const qfMatches = state.matches.filter(m => m.type === 'qf');
+            if (qfMatches.length === 4 && qfMatches.every(m => m.played) && state.matches.filter(m => m.type === 'sf').length === 0) {
+                const sfMatches = [
+                    { id: 'SF-1', type: 'sf', t1: getWinner(qfMatches.find(m=>m.id==='QF-1')), t2: getWinner(qfMatches.find(m=>m.id==='QF-3')), s1:0, s2:0, played:false, events:[] },
+                    { id: 'SF-2', type: 'sf', t1: getWinner(qfMatches.find(m=>m.id==='QF-2')), t2: getWinner(qfMatches.find(m=>m.id==='QF-4')), s1:0, s2:0, played:false, events:[] }
+                ];
+                state.matches = state.matches.concat(sfMatches);
+                renderKnockouts();
+            }
+
+            // Check SF -> Final
+            const sfMatches = state.matches.filter(m => m.type === 'sf');
+            if (sfMatches.length === 2 && sfMatches.every(m => m.played) && state.matches.filter(m => m.type === 'f').length === 0) {
+                const finalMatch = { id: 'F-1', type: 'f', t1: getWinner(sfMatches.find(m=>m.id==='SF-1')), t2: getWinner(sfMatches.find(m=>m.id==='SF-2')), s1:0, s2:0, played:false, events:[] };
+                state.matches.push(finalMatch);
+                renderKnockouts();
+            }
+
+            // Check Final -> Champion
+            const final = state.matches.find(m => m.type === 'f');
+            if (final && final.played) {
+                const champ = getWinner(final);
+                DOM.champFlag.src = champ.flag;
+                DOM.champName.textContent = champ.name;
+                DOM.champBanner.classList.remove('hidden');
+            } else {
+                DOM.champBanner.classList.add('hidden');
+            }
+        }
+
+        function createMatchCardHTML(match, title) {
+            if (!match) return '';
+            const statusClass = match.played ? 'match-played bg-slate-800' : 'match-pending bg-slate-800/40';
+            
+            let scoreHTML = `<span class="text-xs text-slate-500">vs</span>`;
+            if (match.played) {
+                scoreHTML = `<span class="font-bold text-lg text-white">${match.s1} - ${match.s2}</span>`;
+                if (match.s1 === match.s2) {
+                    scoreHTML += `<div class="text-[10px] text-indigo-400 mt-1">Pen: ${match.pen1}-${match.pen2}</div>`;
+                }
+            }
+            
+            const winner = getWinner(match);
+            const t1Win = winner && winner.id === match.t1.id;
+            const t2Win = winner && winner.id === match.t2.id;
+
+            return `
+                <div class="glass-panel p-3 w-full match-card ${statusClass}" onclick="openMatchEditor('${match.id}')">
+                    ${title ? `<div class="text-xs text-center text-slate-400 mb-2 border-b border-slate-700 pb-1">${title}</div>` : ''}
+                    <div class="flex flex-col gap-2">
+                        <div class="flex justify-between items-center bg-slate-900/50 p-1.5 rounded ${t1Win ? 'border border-blue-500/50' : ''}">
+                            <div class="flex items-center gap-2">
+                                <img src="${match.t1.flag}" class="flag-icon w-5 h-3" alt="${match.t1.name}">
+                                <span class="${t1Win ? 'font-bold text-blue-300' : 'text-slate-300'} text-sm truncate max-w-[100px]">${match.t1.name}</span>
+                            </div>
+                            <span class="font-bold text-white bg-slate-800 px-2 rounded">${match.played ? match.s1 : '-'}</span>
+                        </div>
+                        <div class="flex justify-between items-center bg-slate-900/50 p-1.5 rounded ${t2Win ? 'border border-blue-500/50' : ''}">
+                             <div class="flex items-center gap-2">
+                                <img src="${match.t2.flag}" class="flag-icon w-5 h-3" alt="${match.t2.name}">
+                                <span class="${t2Win ? 'font-bold text-blue-300' : 'text-slate-300'} text-sm truncate max-w-[100px]">${match.t2.name}</span>
+                            </div>
+                            <span class="font-bold text-white bg-slate-800 px-2 rounded">${match.played ? match.s2 : '-'}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderKnockouts() {
+            // QF
+            DOM.bQf.innerHTML = '<h3 class="text-center font-bold text-slate-400 mb-2">Cuartos de Final</h3>';
+            state.matches.filter(m => m.type === 'qf').forEach((m, idx) => {
+                DOM.bQf.innerHTML += createMatchCardHTML(m, `Q${idx+1}`);
+            });
+
+            // SF
+            DOM.bSf.innerHTML = '<h3 class="text-center font-bold text-slate-400 mb-2">Semifinales</h3>';
+            state.matches.filter(m => m.type === 'sf').forEach((m, idx) => {
+                DOM.bSf.innerHTML += createMatchCardHTML(m, `S${idx+1}`);
+            });
+
+            // Final
+            DOM.bF.innerHTML = '<h3 class="text-center font-bold text-yellow-400 mb-2 border-b border-yellow-500/30 pb-2">La Gran Final</h3>';
+            state.matches.filter(m => m.type === 'f').forEach(m => {
+                DOM.bF.innerHTML += createMatchCardHTML(m, '');
+            });
+        }
+
+        function getTeamById(id) {
+            return teamsData.find(t => t.id === id);
+        }
+
+        function updateStats() {
+            const scorers = {};
+            const assists = {};
+            const defense = {};
+
+            // Initialize defense for all teams
+            teamsData.forEach(t => {
+                defense[t.id] = { team: t, pj: 0, gc: 0 };
+            });
+
+            // Process all played matches
+            state.matches.filter(m => m.played).forEach(m => {
+                // Defense
+                defense[m.t1.id].pj++; defense[m.t1.id].gc += m.s2;
+                defense[m.t2.id].pj++; defense[m.t2.id].gc += m.s1;
+
+                // Player Stats
+                m.events.forEach(ev => {
+                    const team = getTeamById(ev.teamId);
+                    
+                    if (ev.scorer) {
+                        const key = ev.scorer.toLowerCase();
+                        if (!scorers[key]) scorers[key] = { name: ev.scorer, team: team, goals: 0 };
+                        scorers[key].goals++;
+                    }
+
+                    if (ev.assist) {
+                        const key = ev.assist.toLowerCase();
+                        if (!assists[key]) assists[key] = { name: ev.assist, team: team, count: 0 };
+                        assists[key].count++;
+                    }
+                });
+            });
+
+            // Sort & Render Goleadores
+            const topScorers = Object.values(scorers).sort((a, b) => b.goals - a.goals).slice(0, 10);
+            DOM.sScorers.innerHTML = topScorers.map((s, i) => `
+                <tr class="border-b border-slate-700/30">
+                    <td class="py-2 text-sm font-medium ${i===0?'text-yellow-400':''}">${s.name}</td>
+                    <td class="py-2"><div class="flex items-center gap-1"><img src="${s.team.flag}" class="w-4 h-3 rounded"><span class="text-xs text-slate-400">${s.team.name}</span></div></td>
+                    <td class="py-2 text-center font-bold text-emerald-400">${s.goals}</td>
+                </tr>
+            `).join('') || `<tr><td colspan="3" class="text-center py-4 text-slate-500 text-sm">Aún no hay goles registrados</td></tr>`;
+
+            // Sort & Render Asistidores
+            const topAssists = Object.values(assists).sort((a, b) => b.count - a.count).slice(0, 10);
+            DOM.sAssists.innerHTML = topAssists.map((a, i) => `
+                <tr class="border-b border-slate-700/30">
+                    <td class="py-2 text-sm font-medium ${i===0?'text-yellow-400':''}">${a.name}</td>
+                    <td class="py-2"><div class="flex items-center gap-1"><img src="${a.team.flag}" class="w-4 h-3 rounded"><span class="text-xs text-slate-400">${a.team.name}</span></div></td>
+                    <td class="py-2 text-center font-bold text-blue-400">${a.count}</td>
+                </tr>
+            `).join('') || `<tr><td colspan="3" class="text-center py-4 text-slate-500 text-sm">Aún no hay asistencias registradas</td></tr>`;
+
+            // Sort & Render Menos Goleado (Min 2 games played to qualify nicely, but we show all for now)
+            const topDefense = Object.values(defense)
+                .filter(d => d.pj > 0)
+                .map(d => ({ ...d, prom: d.pj > 0 ? (d.gc / d.pj).toFixed(2) : 0 }))
+                .sort((a, b) => a.prom - b.prom || a.gc - b.gc)
+                .slice(0, 10);
+                
+            DOM.sDefense.innerHTML = topDefense.map((d, i) => `
+                <tr class="border-b border-slate-700/30">
+                    <td class="py-2"><div class="flex items-center gap-2"><img src="${d.team.flag}" class="w-5 h-3 rounded"><span class="text-sm font-medium ${i===0?'text-yellow-400':''}">${d.team.name}</span></div></td>
+                    <td class="py-2 text-center text-xs text-slate-400">${d.pj}</td>
+                    <td class="py-2 text-center text-sm">${d.gc}</td>
+                    <td class="py-2 text-center font-bold text-purple-400">${d.prom}</td>
+                </tr>
+            `).join('') || `<tr><td colspan="4" class="text-center py-4 text-slate-500 text-sm">Aún no hay partidos jugados</td></tr>`;
+        }
+
+        DOM.btnDraw.addEventListener('click', initTournament);
+        DOM.btnClose.addEventListener('click', closeModal);
+        DOM.btnCancel.addEventListener('click', closeModal);
+
+        DOM.tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Remove active from all
+                DOM.tabs.forEach(t => t.classList.remove('active'));
+                DOM.tabContents.forEach(c => c.classList.add('hidden', 'block'));
+                
+                // Add active to clicked
+                tab.classList.add('active');
+                
+                // Show content
+                const target = document.getElementById(`tab-${tab.dataset.tab}`);
+                // Ensure display block rather than flex if needed, but tailwind hidden toggling is enough
+                DOM.tabContents.forEach(c => c.classList.replace('block', 'hidden'));
+                target.classList.replace('hidden', 'block');
+            });
+        });
+
+    </script>
+</body>
+</html>

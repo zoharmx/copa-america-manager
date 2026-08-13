@@ -1,0 +1,27 @@
+rules_version = '2';
+
+// firestore.rules
+// IMPORTANTE: Estas reglas permiten lectura y escritura PÚBLICA.
+// Sirven para un proyecto personal/demo. Para producción real, añade
+// autenticación y limita writes por user.
+//
+// Cómo aplicarlas:
+//   1) Instala Firebase CLI:        npm i -g firebase-tools
+//   2) Login:                        firebase login
+//   3) Selecciona el proyecto:       firebase use copa-america-a37d2
+//   4) Despliega solo las reglas:    firebase deploy --only firestore:rules
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Cada torneo es un documento; sus partidos viven en la subcolección 'matches'
+    match /tournaments/{tournamentId} {
+      allow read: if true;
+      allow write: if true;
+
+      match /matches/{matchId} {
+        allow read: if true;
+        allow write: if true;
+      }
+    }
+  }
+}

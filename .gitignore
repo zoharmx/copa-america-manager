@@ -1,0 +1,47 @@
+# Dependencias
+node_modules/
+.pnp
+.pnp.js
+
+# Variables de entorno (NUNCA subir credenciales)
+.env
+.env.local
+.env.*.local
+
+# Credenciales Firebase (NUNCA subir)
+*firebase-adminsdk*.json
+*serviceAccount*.json
+service-account*.json
+gcloud-service-account.json
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Builds
+dist/
+build/
+.next/
+out/
+
+# Generado por scripts/build-firebase-config.js
+public/js/firebase-runtime-config.js
+
+# Vercel
+.vercel
+
+# Archivos temporales de la carpeta
+*.tmp
+*.bak
