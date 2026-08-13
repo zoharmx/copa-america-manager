@@ -897,6 +897,14 @@
 
         DOM.btnDraw.addEventListener('click', initTournament);
 
+        // El sorteo queda deshabilitado hasta que el puente confirme que no
+        // hay un torneo guardado en la nube (evita regenerar grupos al
+        // refrescar). Si Firebase no carga en 10s, se habilita (modo offline).
+        DOM.btnDraw.disabled = true;
+        setTimeout(() => {
+            if (!window.__FIREBASE_READY__) DOM.btnDraw.disabled = false;
+        }, 10000);
+
         // Nuevo torneo: borra los datos actuales y empieza de cero
         DOM.btnNewTournament.addEventListener('click', () => {
             if (!confirm('¿Empezar un nuevo torneo?\n\nSe borrarán los resultados actuales y se realizará un sorteo nuevo.')) return;

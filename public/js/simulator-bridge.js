@@ -35,6 +35,15 @@
   }, 100);
 
   function attach() {
+    // Bloquea el botón de sorteo hasta que el snapshot confirme si ya hay un
+    // torneo guardado en la nube. Sin esto, un clic rápido justo tras un
+    // refresh (cuando state.matches aún está vacío) regenera un sorteo
+    // aleatorio y pisa los datos restaurados. (El botón ya viene deshabilitado
+    // desde index.html; aquí se reafirma y se re-habilita según el snapshot.)
+    const btnDraw = document.getElementById('btn-draw');
+    const enableDraw = () => { if (btnDraw) btnDraw.disabled = false; };
+    if (btnDraw) btnDraw.disabled = true;
+
     // Muestra el id del torneo en pantalla para depurar
     const badge = document.createElement('div');
     badge.style.cssText =
@@ -56,8 +65,9 @@
       TOURNAMENT_ID,
       (remoteMatches) => {
         if (!initialHydrated && Object.keys(remoteMatches).length === 0) {
-          // Primer arranque, nada en la nube aún
+          // Primer arranque, nada en la nube aún: se puede hacer el sorteo
           initialHydrated = true;
+          enableDraw();
           return;
         }
         initialHydrated = true;
@@ -111,6 +121,8 @@
             if (kWarning) kWarning.classList.add('hidden');
             if (kBracket) kBracket.classList.remove('hidden');
           }
+          // Ya sabemos que hay torneo guardado; el sorteo queda oculto igualmente
+          enableDraw();
         }
         // Re-render si las funciones existen
         if (typeof renderAll === 'function') renderAll();
@@ -118,7 +130,11 @@
         if (typeof updateStats === 'function') updateStats();
         if (typeof renderKnockouts === 'function') renderKnockouts();
       },
-      (err) => console.error('[Firebase] snapshot error', err)
+      (err) => {
+        console.error('[Firebase] snapshot error', err);
+        // Si la suscripción falla, no dejar el sorteo bloqueado para siempre
+        enableDraw();
+      }
     );
 
     // Engancha la persistencia: cada vez que el simulador modifique un
