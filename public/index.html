@@ -338,6 +338,15 @@
         }
 
         function initTournament() {
+            // Si ya hay partidos (restaurados desde la nube tras un refresh),
+            // no regenerar un sorteo aleatorio: solo mostrar el dashboard.
+            if (state.matches.length > 0) {
+                DOM.initSection.classList.add('hidden');
+                DOM.dashboard.classList.remove('hidden');
+                renderGroups();
+                updateStats();
+                return;
+            }
             // Draw Groups
             const pots = { 1: [], 2: [], 3: [], 4: [] };
             teamsData.forEach(t => pots[t.pot].push({ ...t }));

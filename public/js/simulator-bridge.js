@@ -70,6 +70,48 @@
             state.matches.push(rm);
           }
         });
+
+        // --- Restauración de la app cuando llegan datos de la nube ---
+        // (p. ej. tras un refresh: los resultados siguen en Firestore pero la
+        //  app muestra la pantalla de sorteo y state.groups está vacío).
+        const hasMatches = state.matches.length > 0;
+        if (hasMatches) {
+          const groupsEmpty = Object.values(state.groups).every((g) => g.length === 0);
+          if (groupsEmpty) {
+            // Reconstruye las tablas de grupos desde los partidos hidratados
+            const teamsByGroup = { A: [], B: [], C: [], D: [] };
+            state.matches
+              .filter((m) => m.type === 'group')
+              .forEach((m) => {
+                [m.t1, m.t2].forEach((t) => {
+                  if (t && !teamsByGroup[m.group].some((x) => x.id === t.id)) {
+                    teamsByGroup[m.group].push(t);
+                  }
+                });
+              });
+            Object.keys(teamsByGroup).forEach((g) => {
+              state.groups[g] = teamsByGroup[g];
+            });
+            // Recalcula posiciones desde los resultados jugados (solo si
+            // acabamos de reconstruir las tablas, para no tocar un sorteo local)
+            if (typeof recalculateGroupStandings === 'function') recalculateGroupStandings();
+          }
+
+          // Muestra el dashboard en lugar de la pantalla de sorteo
+          const initSection = document.getElementById('init-section');
+          const dashboard = document.getElementById('main-dashboard');
+          if (initSection) initSection.classList.add('hidden');
+          if (dashboard) dashboard.classList.remove('hidden');
+
+          // Si hay cruces de eliminación, muestra el bracket
+          const hasKnockouts = state.matches.some((m) => m.type !== 'group');
+          if (hasKnockouts) {
+            const kWarning = document.getElementById('knockout-warning');
+            const kBracket = document.getElementById('knockout-bracket');
+            if (kWarning) kWarning.classList.add('hidden');
+            if (kBracket) kBracket.classList.remove('hidden');
+          }
+        }
         // Re-render si las funciones existen
         if (typeof renderAll === 'function') renderAll();
         else if (typeof renderGroups === 'function') renderGroups();
