@@ -12,12 +12,14 @@ const path = require('path');
 
 const out = path.join(__dirname, '..', 'public', 'js', 'firebase-runtime-config.js');
 
-const apiKey            = process.env.FIREBASE_API_KEY            || '';
-const authDomain        = process.env.FIREBASE_AUTH_DOMAIN        || '';
-const projectId         = process.env.FIREBASE_PROJECT_ID         || '';
-const storageBucket     = process.env.FIREBASE_STORAGE_BUCKET     || '';
-const messagingSenderId = process.env.FIREBASE_MESSAGING_SENDER_ID || '';
-const appId             = process.env.FIREBASE_APP_ID             || '';
+// .trim() por si el valor llega con saltos de línea/espacios (p. ej. al
+// pegar la config en el dashboard de Vercel), que romperían la inicialización.
+const apiKey            = (process.env.FIREBASE_API_KEY            || '').trim();
+const authDomain        = (process.env.FIREBASE_AUTH_DOMAIN        || '').trim();
+const projectId         = (process.env.FIREBASE_PROJECT_ID         || '').trim();
+const storageBucket     = (process.env.FIREBASE_STORAGE_BUCKET     || '').trim();
+const messagingSenderId = (process.env.FIREBASE_MESSAGING_SENDER_ID || '').trim();
+const appId             = (process.env.FIREBASE_APP_ID             || '').trim();
 
 if (!apiKey) {
   console.log('[build] FIREBASE_API_KEY no definida — se omite (la app funcionará offline).');

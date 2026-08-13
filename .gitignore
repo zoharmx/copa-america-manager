@@ -45,3 +45,5 @@ public/js/firebase-runtime-config.js
 # Archivos temporales de la carpeta
 *.tmp
 *.bak
+
+.vercel

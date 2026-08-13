@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "public": "public",
+  "outputDirectory": "public",
   "buildCommand": "node scripts/build-firebase-config.js",
   "cleanUrls": true,
   "trailingSlash": false,
