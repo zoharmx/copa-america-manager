@@ -4,11 +4,37 @@ Simulador de Copa América con persistencia en tiempo real usando **Firebase Fir
 
 ## ✨ Características
 
-- Sorteo oficial automático (4 bombos, 4 grupos)
-- Gestión completa de fase de grupos y eliminatorias (cuartos, semis, final)
+- **24 selecciones**: 16 de América + 8 invitadas (España, Italia, Inglaterra, Marruecos, Nigeria, Japón, Arabia Saudita e Israel)
+- Sorteo oficial automático (4 bombos de 6, **6 grupos de 4**)
+- **Clasifican a octavos** los 2 primeros de cada grupo + los **4 mejores terceros** (tabla de terceros en vivo)
+- Gestión completa de fase de grupos y eliminatorias (octavos, cuartos, semis, final)
 - Edición de marcadores, goleadores y asistidores
 - Estadísticas en vivo (goleadores, asistidores, valla menos vencida)
 - 🆕 **Persistencia en tiempo real** vía Firestore: cualquier persona que abra la URL ve los mismos resultados al instante
+
+## 🏟️ Formato del torneo (24 equipos)
+
+**Bombos** (6 equipos cada uno, se reparte 1 de cada bombo por grupo):
+
+| Bombo | Selecciones |
+|-------|-------------|
+| 1 | Argentina, Brasil, **España**, **Inglaterra**, Colombia, Estados Unidos |
+| 2 | Uruguay, **Italia**, México, Ecuador, **Marruecos**, Canadá |
+| 3 | **Japón**, Paraguay, Chile, Perú, **Nigeria**, Jamaica |
+| 4 | **Arabia Saudita**, Venezuela, **Israel**, Haití, Bolivia, Curazao |
+
+> En **negrita** las 8 selecciones invitadas (aparecen con la etiqueta `INV` en las tablas).
+
+**Fase de grupos**: 6 grupos (A–F) de 4 equipos, todos contra todos → 36 partidos.
+
+**Clasificación a octavos** (16 equipos):
+- Los **6 primeros** de grupo
+- Los **6 segundos** de grupo
+- Los **4 mejores terceros** de los 6, ordenados por Pts → Dif. de gol → Goles a favor
+
+**Cuadro de eliminatorias**: Octavos (8) → Cuartos (4) → Semifinales (2) → Final. Total: **51 partidos**.
+
+El sembrado empareja a los mejores primeros con los peores terceros y **evita que dos equipos del mismo grupo se reencuentren en octavos**.
 
 ## 🚀 Despliegue rápido
 

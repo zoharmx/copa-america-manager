@@ -72,7 +72,10 @@
         }
         initialHydrated = true;
         // Mezcla partidos remotos en el estado local
+        window.__SYNCED_IDS__ = window.__SYNCED_IDS__ || new Set();
         Object.values(remoteMatches).forEach((rm) => {
+          // Lo que llega de la nube ya esta sincronizado: evita reenviarlo
+          window.__SYNCED_IDS__.add(rm.id);
           const idx = state.matches.findIndex((m) => m.id === rm.id);
           if (idx >= 0) {
             state.matches[idx] = rm;
@@ -88,11 +91,14 @@
         if (hasMatches) {
           const groupsEmpty = Object.values(state.groups).every((g) => g.length === 0);
           if (groupsEmpty) {
-            // Reconstruye las tablas de grupos desde los partidos hidratados
-            const teamsByGroup = { A: [], B: [], C: [], D: [] };
+            // Reconstruye las tablas de grupos desde los partidos hidratados.
+            // Los grupos se derivan de los propios partidos, asi que funciona
+            // con cualquier numero de grupos (hoy 6: A-F).
+            const teamsByGroup = {};
             state.matches
               .filter((m) => m.type === 'group')
               .forEach((m) => {
+                if (!teamsByGroup[m.group]) teamsByGroup[m.group] = [];
                 [m.t1, m.t2].forEach((t) => {
                   if (t && !teamsByGroup[m.group].some((x) => x.id === t.id)) {
                     teamsByGroup[m.group].push(t);
@@ -116,6 +122,9 @@
           // Si hay cruces de eliminación, muestra el bracket
           const hasKnockouts = state.matches.some((m) => m.type !== 'group');
           if (hasKnockouts) {
+            // Marca los octavos como ya generados para no volver a sortearlos
+            // al editar un partido de grupos tras un refresh.
+            state.knockoutsGenerated = true;
             const kWarning = document.getElementById('knockout-warning');
             const kBracket = document.getElementById('knockout-bracket');
             if (kWarning) kWarning.classList.add('hidden');
