@@ -4,8 +4,8 @@ Simulador de Copa América con persistencia en tiempo real usando **Firebase Fir
 
 ## ✨ Características
 
-- **24 selecciones**: 16 de América + 8 invitadas (España, Italia, Inglaterra, Marruecos, Nigeria, Japón, Arabia Saudita e Israel)
-- Sorteo oficial automático (4 bombos de 6, **6 grupos de 4**)
+- **24 selecciones**: 13 de América (10 CONCACAF + 3 CONMEBOL) + 11 invitadas (8 UEFA, 2 AFC y 1 CAF)
+- Sorteo oficial automático (4 bombos de 6 armados por **ranking FIFA**, **6 grupos de 4**)
 - **Clasifican a octavos** los 2 primeros de cada grupo + los **4 mejores terceros** (tabla de terceros en vivo)
 - Gestión completa de fase de grupos y eliminatorias (octavos, cuartos, semis, final)
 - Edición de marcadores, goleadores y asistidores
@@ -14,16 +14,16 @@ Simulador de Copa América con persistencia en tiempo real usando **Firebase Fir
 
 ## 🏟️ Formato del torneo (24 equipos)
 
-**Bombos** (6 equipos cada uno, se reparte 1 de cada bombo por grupo):
+**Bombos** (6 equipos cada uno, armados por ranking FIFA del 20 de julio de 2026; se reparte 1 de cada bombo por grupo):
 
-| Bombo | Selecciones |
+| Bombo | Selecciones (ranking FIFA) |
 |-------|-------------|
-| 1 | Argentina, Brasil, **España**, **Inglaterra**, Colombia, Estados Unidos |
-| 2 | Uruguay, **Italia**, México, Ecuador, **Marruecos**, Canadá |
-| 3 | **Japón**, Paraguay, Chile, Perú, **Nigeria**, Jamaica |
-| 4 | **Arabia Saudita**, Venezuela, **Israel**, Haití, Bolivia, Curazao |
+| 1 | Argentina (2), **Francia** (3), Brasil (5), **Portugal** (7), **Holanda** (9), México (10) |
+| 2 | **Alemania** (12), **Croacia** (13), Estados Unidos (16), **Senegal** (18), **Noruega** (19), Uruguay (20) |
+| 3 | **Dinamarca** (21), Canadá (30), **Corea del Sur** (32), **Suecia** (37), Panamá (44), Costa Rica (51) |
+| 4 | Honduras (66), Jamaica (71), Haití (88), **China** (91), Guatemala (97), Surinam (125) |
 
-> En **negrita** las 8 selecciones invitadas (aparecen con la etiqueta `INV` en las tablas).
+> En **negrita** las 11 selecciones invitadas (aparecen con la etiqueta `INV` en las tablas).
 
 **Fase de grupos**: 6 grupos (A–F) de 4 equipos, todos contra todos → 36 partidos.
 

@@ -298,37 +298,38 @@
 
     <script>
         // Core Data
-        // 24 seleccciones: 16 de América + 8 invitadas (inv: true).
-        // 4 bombos de 6 equipos -> 6 grupos de 4.
+        // 24 selecciones: 13 de América (CONCACAF + CONMEBOL) + 11 invitadas (inv: true)
+        // de UEFA, AFC y CAF. Bombos por ranking FIFA (20 jul 2026, entre parentesis):
+        // los 6 mejores al bombo 1, los 6 siguientes al 2, etc. -> 6 grupos de 4.
         const teamsData = [
             // Bombo 1
-            { id: 'ARG', name: "Argentina", flag: "https://flagcdn.com/w40/ar.png", pot: 1 },
-            { id: 'BRA', name: "Brasil", flag: "https://flagcdn.com/w40/br.png", pot: 1 },
-            { id: 'ESP', name: "Espana", flag: "https://flagcdn.com/w40/es.png", pot: 1, inv: true },
-            { id: 'ENG', name: "Inglaterra", flag: "https://flagcdn.com/w40/gb-eng.png", pot: 1, inv: true },
-            { id: 'COL', name: "Colombia", flag: "https://flagcdn.com/w40/co.png", pot: 1 },
-            { id: 'USA', name: "Estados Unidos", flag: "https://flagcdn.com/w40/us.png", pot: 1 },
+            { id: 'ARG', name: "Argentina", flag: "https://flagcdn.com/w40/ar.png", pot: 1 },                 // 2
+            { id: 'FRA', name: "Francia", flag: "https://flagcdn.com/w40/fr.png", pot: 1, inv: true },       // 3
+            { id: 'BRA', name: "Brasil", flag: "https://flagcdn.com/w40/br.png", pot: 1 },                   // 5
+            { id: 'POR', name: "Portugal", flag: "https://flagcdn.com/w40/pt.png", pot: 1, inv: true },      // 7
+            { id: 'NED', name: "Holanda", flag: "https://flagcdn.com/w40/nl.png", pot: 1, inv: true },       // 9
+            { id: 'MEX', name: "Mexico", flag: "https://flagcdn.com/w40/mx.png", pot: 1 },                   // 10
             // Bombo 2
-            { id: 'URU', name: "Uruguay", flag: "https://flagcdn.com/w40/uy.png", pot: 2 },
-            { id: 'ITA', name: "Italia", flag: "https://flagcdn.com/w40/it.png", pot: 2, inv: true },
-            { id: 'MEX', name: "Mexico", flag: "https://flagcdn.com/w40/mx.png", pot: 2 },
-            { id: 'ECU', name: "Ecuador", flag: "https://flagcdn.com/w40/ec.png", pot: 2 },
-            { id: 'MAR', name: "Marruecos", flag: "https://flagcdn.com/w40/ma.png", pot: 2, inv: true },
-            { id: 'CAN', name: "Canada", flag: "https://flagcdn.com/w40/ca.png", pot: 2 },
+            { id: 'GER', name: "Alemania", flag: "https://flagcdn.com/w40/de.png", pot: 2, inv: true },      // 12
+            { id: 'CRO', name: "Croacia", flag: "https://flagcdn.com/w40/hr.png", pot: 2, inv: true },       // 13
+            { id: 'USA', name: "Estados Unidos", flag: "https://flagcdn.com/w40/us.png", pot: 2 },           // 16
+            { id: 'SEN', name: "Senegal", flag: "https://flagcdn.com/w40/sn.png", pot: 2, inv: true },       // 18
+            { id: 'NOR', name: "Noruega", flag: "https://flagcdn.com/w40/no.png", pot: 2, inv: true },       // 19
+            { id: 'URU', name: "Uruguay", flag: "https://flagcdn.com/w40/uy.png", pot: 2 },                  // 20
             // Bombo 3
-            { id: 'JPN', name: "Japon", flag: "https://flagcdn.com/w40/jp.png", pot: 3, inv: true },
-            { id: 'PAR', name: "Paraguay", flag: "https://flagcdn.com/w40/py.png", pot: 3 },
-            { id: 'CHI', name: "Chile", flag: "https://flagcdn.com/w40/cl.png", pot: 3 },
-            { id: 'PER', name: "Peru", flag: "https://flagcdn.com/w40/pe.png", pot: 3 },
-            { id: 'NGA', name: "Nigeria", flag: "https://flagcdn.com/w40/ng.png", pot: 3, inv: true },
-            { id: 'JAM', name: "Jamaica", flag: "https://flagcdn.com/w40/jm.png", pot: 3 },
+            { id: 'DEN', name: "Dinamarca", flag: "https://flagcdn.com/w40/dk.png", pot: 3, inv: true },     // 21
+            { id: 'CAN', name: "Canada", flag: "https://flagcdn.com/w40/ca.png", pot: 3 },                   // 30
+            { id: 'KOR', name: "Corea del Sur", flag: "https://flagcdn.com/w40/kr.png", pot: 3, inv: true }, // 32
+            { id: 'SWE', name: "Suecia", flag: "https://flagcdn.com/w40/se.png", pot: 3, inv: true },        // 37
+            { id: 'PAN', name: "Panama", flag: "https://flagcdn.com/w40/pa.png", pot: 3 },                   // 44
+            { id: 'CRC', name: "Costa Rica", flag: "https://flagcdn.com/w40/cr.png", pot: 3 },               // 51
             // Bombo 4
-            { id: 'KSA', name: "Arabia Saudita", flag: "https://flagcdn.com/w40/sa.png", pot: 4, inv: true },
-            { id: 'VEN', name: "Venezuela", flag: "https://flagcdn.com/w40/ve.png", pot: 4 },
-            { id: 'ISR', name: "Israel", flag: "https://flagcdn.com/w40/il.png", pot: 4, inv: true },
-            { id: 'HAI', name: "Haiti", flag: "https://flagcdn.com/w40/ht.png", pot: 4 },
-            { id: 'BOL', name: "Bolivia", flag: "https://flagcdn.com/w40/bo.png", pot: 4 },
-            { id: 'CUW', name: "Curazao", flag: "https://flagcdn.com/w40/cw.png", pot: 4 }
+            { id: 'HON', name: "Honduras", flag: "https://flagcdn.com/w40/hn.png", pot: 4 },                 // 66
+            { id: 'JAM', name: "Jamaica", flag: "https://flagcdn.com/w40/jm.png", pot: 4 },                  // 71
+            { id: 'HAI', name: "Haiti", flag: "https://flagcdn.com/w40/ht.png", pot: 4 },                    // 88
+            { id: 'CHN', name: "China", flag: "https://flagcdn.com/w40/cn.png", pot: 4, inv: true },         // 91
+            { id: 'GUA', name: "Guatemala", flag: "https://flagcdn.com/w40/gt.png", pot: 4 },                // 97
+            { id: 'SUR', name: "Surinam", flag: "https://flagcdn.com/w40/sr.png", pot: 4 }                   // 125
         ];
 
         // Grupos del torneo (6 grupos de 4)
@@ -1022,12 +1023,14 @@
             // Process all played matches
             state.matches.filter(m => m.played).forEach(m => {
                 // Defense
+                // Un torneo guardado puede traer selecciones de una version anterior
+                [m.t1, m.t2].forEach(t => { if (!defense[t.id]) defense[t.id] = { team: t, pj: 0, gc: 0 }; });
                 defense[m.t1.id].pj++; defense[m.t1.id].gc += m.s2;
                 defense[m.t2.id].pj++; defense[m.t2.id].gc += m.s1;
 
                 // Player Stats
                 m.events.forEach(ev => {
-                    const team = getTeamById(ev.teamId);
+                    const team = getTeamById(ev.teamId) || (ev.teamId === m.t1.id ? m.t1 : m.t2);
                     
                     if (ev.scorer) {
                         const key = ev.scorer.toLowerCase();
